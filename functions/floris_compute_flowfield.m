@@ -10,6 +10,7 @@ function [ wakes,flowField ] = floris_compute_flowfield( site,model,turbType,flo
              turbType.rotorDiameter, model, turbines(turb_num), wakes(turb_num));
     end
     
+    
     % Compute the windspeed at a cutthrough of the wind farm
     for xSample = flowField.X(1,:,1)
         % Select the upwind turbines and compute their distance
@@ -21,33 +22,44 @@ function [ wakes,flowField ] = floris_compute_flowfield( site,model,turbType,flo
         % turbine. This is used later on to cut the computation time in
         % half in extreme cases.
         tusF = zeros(size(flowField.U(:,1,:)));
-        for turb_num = 1:length(UwTurbines)
+%         for turb_num = 1:length(UwTurbines)
+%             [~,wakeLocIndex] = min(abs(wakes(turb_num).centerLine(1,:)-xSample));
+%             tusF(hypot(flowField.Y(:,1,:)-wakes(turb_num).centerLine(2,wakeLocIndex), ...
+%             flowField.Z(:,1,:)-turbines(turb_num).LocWF(3))<= ...
+%             wakes(turb_num).diameters(wakeLocIndex,3)./2) = 1;
+%         end
+        
+%         for i = 1:size(squeeze((tusF)),1)
+%             for j = 1:size(squeeze((tusF)),2)
+%                 % Check if the voxel is affected by some turbine.. if not
+%                 % skip the windspeed computation.
+%                 if tusF(i,1,j)
+%                     sout = 0; % outer sum of Eq. 22
+%                     for turb_num = 1:length(UwTurbines)
+%                         [~,wakeLocIndex] = min(abs(wakes(turb_num).centerLine(1,:)-xSample));
+%                         for zone = 1:3
+%                             if hypot(flowField.Y(i,1,j)-wakes(turb_num).centerLine(2,wakeLocIndex), ...
+%                                 flowField.Z(i,1,j)-turbines(turb_num).LocWF(3))<= ...
+%                                 wakes(turb_num).diameters(wakeLocIndex,zone)./2
+%                                 sout = sout + (turbines(turb_num).axialInd*(turbType.rotorDiameter/(turbType.rotorDiameter + 2*wakes(turb_num).Ke*wakes(turb_num).mU(zone)*deltaXs(turb_num)))^2)^2; % Eq. 16
+%                                 break
+%                             end
+%                         end
+%                     end
+%                     flowField.U(i,flowField.X(1,:,1)==xSample,j) = site.uInfWf*(1-2*sqrt(sout));
+%                 end
+%             end
+%         end
+
+
+        if min(abs(wakes(turb_num).centerLine(1,:)-xSample))==0;
             [~,wakeLocIndex] = min(abs(wakes(turb_num).centerLine(1,:)-xSample));
-            tusF(hypot(flowField.Y(:,1,:)-wakes(turb_num).centerLine(2,wakeLocIndex), ...
-            flowField.Z(:,1,:)-turbines(turb_num).LocWF(3))<= ...
-            wakes(turb_num).diameters(wakeLocIndex,3)./2) = 1;
-        end
-    
-        for i = 1:size(squeeze((tusF)),1)
-            for j = 1:size(squeeze((tusF)),2)
-                % Check if the voxel is affected by some turbine.. if not
-                % skip the windspeed computation.
-                if tusF(i,1,j)
-                    sout = 0; % outer sum of Eq. 22
-                    for turb_num = 1:length(UwTurbines)
-                        [~,wakeLocIndex] = min(abs(wakes(turb_num).centerLine(1,:)-xSample));
-                        for zone = 1:3
-                            if hypot(flowField.Y(i,1,j)-wakes(turb_num).centerLine(2,wakeLocIndex), ...
-                                flowField.Z(i,1,j)-turbines(turb_num).LocWF(3))<= ...
-                                wakes(turb_num).diameters(wakeLocIndex,zone)./2
-                                sout = sout + (turbines(turb_num).axialInd*(turbType.rotorDiameter/(turbType.rotorDiameter + 2*wakes(turb_num).Ke*wakes(turb_num).mU(zone)*deltaXs(turb_num)))^2)^2; % Eq. 16
-                                break
-                            end
-                        end
-                    end
-                    flowField.U(i,flowField.X(1,:,1)==xSample,j) = site.uInfWf*(1-2*sqrt(sout));
-                end
-            end
+            
+            gauu = normpdf(flowField.Y(:,1,1),wakes(turb_num).centerLine(2,wakeLocIndex),wakes(turb_num).diameters(wakeLocIndex,2)./6);
+            mgauu = max(gauu);
+            gauu = (mgauu-gauu);
+
+            flowField.U(:,flowField.X(1,:,1)==xSample,1) = ((site.uInfWf-7)./mgauu)*gauu+7;
         end
     end
 end

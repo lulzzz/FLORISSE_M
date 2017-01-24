@@ -5,12 +5,12 @@ addpath('functions');
 %% Script settings
 plotLayout    = true;     % plot farm layout w.r.t. inertial and wind frame
 plot2DFlowfield = true ; % 2DflowFieldvisualisation in wind-aligned frame
-plot3DFlowfield = true ;  % 3DflowFieldvisualisation in wind-aligned frame
+plot3DFlowfield = false ;  % 3DflowFieldvisualisation in wind-aligned frame
 
 if (plot2DFlowfield || plot3DFlowfield)
    % resz is not used when only 2Dflowfield is plotted
-   flowField.resx   = 20;     % resolution in x-axis in meters (windframe)
-   flowField.resy   = 20;     % resolution in y-axis in meters (windframe)
+   flowField.resx   = 1;     % resolution in x-axis in meters (windframe)
+   flowField.resy   = 1;     % resolution in y-axis in meters (windframe)
    flowField.resz   = 10;     % resolution in z-axis in meters (windframe)
    flowField.fixYaw  = true;  % Account for yaw in near-turbine region in 2Dplot
    % TODO: implement fixyaw for 3d plot
@@ -20,22 +20,25 @@ end
 model = floris_param_model('default');          % Import model settings
 turbType  = floris_param_turbine('nrel5mw');    % Import turbine settings
 
-% Wind turbine locations in inertial frame 
-LocIF =   [300,    100.0,  turbType.hub_height
-           300,    300.0,  turbType.hub_height
-           300,    500.0,  turbType.hub_height
-           1000,   100.0,  turbType.hub_height
-           1000,   300.0,  turbType.hub_height
-           1000,   500.0,  turbType.hub_height
-           1600,   100.0,  turbType.hub_height
-           1600,   300.0,  turbType.hub_height
-           1600,   500.0,  turbType.hub_height];
+% Wind turbine locations in inertial frame
+LocIF =   [300,    100.0,  turbType.hub_height];
+% LocIF =   [300,    100.0,  turbType.hub_height
+%            300,    300.0,  turbType.hub_height
+%            300,    500.0,  turbType.hub_height
+%            1000,   100.0,  turbType.hub_height
+%            1000,   300.0,  turbType.hub_height
+%            1000,   500.0,  turbType.hub_height
+%            1600,   100.0,  turbType.hub_height
+%            1600,   300.0,  turbType.hub_height
+%            1600,   500.0,  turbType.hub_height];
 
 % Turbine operation settings in wind frame
 % Yaw misalignment with flow (counterclockwise, wind frame)
 % Axial induction control setting (used only if model.axialIndProvided == true)
-turbines = struct(  'Tilt',num2cell([0 0 0 15 15 15 0 0 0].'), ...
-                    'YawWF',num2cell([-27 10 -30 -30 -20 -15 0 10 0].'), ...
+% turbines = struct(  'Tilt',num2cell([0 0 0 15 15 15 0 0 0].'), ...
+%                     'YawWF',num2cell([-27 10 -30 -30 -20 -15 0 10 0].'), ...
+turbines = struct(  'Tilt',num2cell([0].'), ...
+                    'YawWF',num2cell([-27].'), ...
                     'axialInd',1/3,'windSpeed',[],'Cp',[],'Ct',[], ...
                     'power',[],'downstream',[]);
 % TODO: implement effects of turbine tilt
