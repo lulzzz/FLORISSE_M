@@ -1,36 +1,9 @@
 function [ turbines, wakes, wtRows ] = run_floris(input,model,turbType,site,plots)
-if nargin <= 0
-    input.a = 1/3*ones(1,9);
-    input.yaw = zeros(1,9);
-end;
-if nargin <= 1
-    model = floris_param_model('default');      % Import model settings
-end;
-if nargin <= 2
-    turbType  = floris_param_turbine('nrel5mw');    % Import turbine settings
-end;
-if nargin <= 3
-    site.LocIF =   [300,    100.0,  turbType.hub_height
-                    300,    300.0,  turbType.hub_height
-                    300,    500.0,  turbType.hub_height
-                    1000,   100.0,  turbType.hub_height
-                    1000,   300.0,  turbType.hub_height
-                    1000,   500.0,  turbType.hub_height
-                    1600,   100.0,  turbType.hub_height
-                    1600,   300.0,  turbType.hub_height
-                    1600,   500.0,  turbType.hub_height];
-    
-    % Atmospheric settings
-    site.uInfIf   = 10;       % x-direction flow speed inertial frame (m/s)
-    site.vInfIf   = 0;        % y-direction flow speed inertial frame (m/s)
-    site.rho      = 1.1716;   % Atmospheric air density (kg/m3)
-end;
 if nargin <= 4
     plots.plotLayout = false;  % plot farm layout w.r.t. inertial and wind frame
     plots.plot2DFlow = false ; % 2DflowFieldvisualisation in wind-aligned frame
     plots.plot3DFlow = false ; % 3DflowFieldvisualisation in wind-aligned frametimer.script = tic;
 end;
-
 
 %% Core code
 LocIF = site.LocIF;
